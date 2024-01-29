@@ -58,6 +58,7 @@ selenium_config() {
 # Configure Cypht
 setup_cypht() {
     mv .travis/.env .
+    php require_once vendor/autoload.php
     if [ "$DB" = "postgresql" ]; then
         sed -i 's/db_driver=mysql/db_driver=pgsql/' .env
         sed -i 's/mysql/pgsql/' tests/phpunit/mocks.php
