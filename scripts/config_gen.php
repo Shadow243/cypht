@@ -18,7 +18,11 @@ define('WEB_ROOT', '');
 chdir(APP_PATH);
 
 /* get the framework */
+require VENDOR_PATH.'autoload.php';
 require APP_PATH.'lib/framework.php';
+
+$environment = Hm_Environment::getInstance();
+$environment->load();
 
 /* check for proper php support */
 check_php();

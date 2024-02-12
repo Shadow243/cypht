@@ -647,11 +647,15 @@ class Hm_Handler_process_compose_form_submit extends Hm_Handler_Module {
     public function process() {       
         /* not sending */
         if (!array_key_exists('smtp_send', $this->request->post)) {
+            $this->out('enable_attachment_reminder', $this->user_config->get('enable_attachment_reminder_setting', false));
+            return;
+        }
+        if (!array_key_exists('compose_smtp_id', $this->request->post)) {
             return;
         }
 
         /* missing field */
-        list($success, $form) = $this->process_form(array('compose_to', 'compose_subject', 'compose_smtp_id', 'draft_id', 'post_archive', 'next_email_post'));
+        list($success, $form) = $this->process_form(array('compose_to', 'compose_subject', 'compose_body', 'compose_smtp_id', 'draft_id', 'post_archive', 'next_email_post'));
         if (!$success) {
             Hm_Msgs::add('ERRRequired field missing');
             return;
@@ -668,6 +672,8 @@ class Hm_Handler_process_compose_form_submit extends Hm_Handler_Module {
             'draft_subject' => $form['compose_subject'],
             'draft_smtp' => $smtp_id
         );
+        $from_params = '';
+        $recipients_params = '';
 
         /* parse attachments */
         $uploaded_files = [];
@@ -684,6 +690,11 @@ class Hm_Handler_process_compose_form_submit extends Hm_Handler_Module {
 
         /* msg details */
         list($body, $cc, $bcc, $in_reply_to, $draft) = get_outbound_msg_detail($this->request->post, $draft, $body_type);
+
+        if ($this->request->post['compose_delivery_receipt']) {
+            $from_params      = 'RET=HDRS';
+            $recipients_params = 'NOTIFY=SUCCESS,FAILURE';
+        }
 
         /* smtp server details */
         $smtp_details = Hm_SMTP_List::dump($smtp_id, true);
@@ -727,7 +738,7 @@ class Hm_Handler_process_compose_form_submit extends Hm_Handler_Module {
         }
 
         /* send the message */
-        $err_msg = $smtp->send_message($from, $recipients, $mime->get_mime_msg());
+        $err_msg = $smtp->send_message($from, $recipients, $mime->get_mime_msg(), $from_params, $recipients_params);
         if ($err_msg) {
             Hm_Msgs::add(sprintf("ERR%s", $err_msg));
             repopulate_compose_form($draft, $this);
@@ -813,6 +824,13 @@ class Hm_Handler_smtp_auto_bcc_check extends Hm_Handler_Module {
     }
 }
 
+class Hm_Handler_process_enable_attachment_reminder_setting extends Hm_Handler_Module {
+    public function process() {
+        function enable_attachment_reminder_callback($val) { return $val; }
+        process_site_setting('enable_attachment_reminder', $this, 'enable_attachment_reminder_callback', false, true);
+    }
+}
+
 /**
  * @subpackage smtp/handler
  */
@@ -878,6 +896,27 @@ class Hm_Output_attachment_setting extends Hm_Output_Module {
 /**
  * @subpackage smtp/output
  */
+class Hm_Output_enable_attachment_reminder_setting extends Hm_Output_Module {
+    protected function output() {
+        $settings = $this->get('user_settings');
+        if (array_key_exists('enable_attachment_reminder', $settings) && $settings['enable_attachment_reminder']) {
+            $checked = ' checked="checked"';
+            $reset = '<span class="tooltip_restore" restore_aria_label="Restore default value"><img alt="Refresh" class="refresh_list reset_default_value_checkbox"  src="'.Hm_Image_Sources::$refresh.'" /></span>';
+        }
+        else {
+            $checked = '';
+            $reset='';
+        }
+        return '<tr class="general_setting"><td><label for="enable_attachment_reminder">'.
+            $this->trans('Enable Attachment Reminder').'</label></td>'.
+            '<td><input type="checkbox" '.$checked.
+            ' value="1" id="enable_attachment_reminder" name="enable_attachment_reminder" />'.$reset.'</td></tr>';
+    }
+}
+
+/**
+ * @subpackage smtp/output
+ */
 class Hm_Output_sent_folder_link extends Hm_Output_Module {
     protected function output() {
         $res = '<li class="menu_sent"><a class="unread_link" href="?page=message_list&amp;list_path=sent">';
@@ -894,8 +933,8 @@ class Hm_Output_sent_folder_link extends Hm_Output_Module {
  */
 class Hm_Output_compose_form_start extends Hm_Output_Module {
     protected function output() {
-        return'<div class="compose_page"><div class="content_title">'.$this->trans('Compose').'</div>'.
-            '<form class="compose_form" method="post" action="?page=compose">';
+        return '<div class="compose_page"><div class="content_title">'.$this->trans('Compose').'</div>' .
+    '<form class="compose_form" method="post" action="?page=compose" data-reminder="' . $this->get('enable_attachment_reminder', 0) . '">';
     }
 }
 
@@ -1074,9 +1113,10 @@ class Hm_Output_compose_form_content extends Hm_Output_Module {
             '" /><div id="cc_contacts"></div></div><div class="compose_container" ><div class="bubbles bubble_dropdown"></div><input autocomplete="off" value="'.$this->html_safe($bcc).
             '" name="compose_bcc" class="compose_bcc" type="text" placeholder="'.$this->trans('Bcc').'" />'.
             '<div id="bcc_contacts"></div></div></div><input value="'.$this->html_safe($subject).
-            '" required name="compose_subject" class="compose_subject" type="text" placeholder="'.
+            '" name="compose_subject" class="compose_subject" type="text" placeholder="'.
             $this->trans('Subject').'" /><textarea id="compose_body" name="compose_body" class="compose_body">'.
-            $this->html_safe($body).'</textarea>';
+            $this->html_safe($body).'</textarea>'.
+            '<div><input value="1" name="compose_delivery_receipt" id="compose_delivery_receipt" type="checkbox" /><label for="compose_delivery_receipt">'.$this->trans('Request a delivery receipt').'</label></div>';
         if ($html == 2) {
             $res .= '<link href="'.WEB_ROOT.'modules/smtp/assets/markdown/editor.css" rel="stylesheet" />'.
                 '<script type="text/javascript" src="'.WEB_ROOT.'modules/smtp/assets/markdown/editor.js"></script>'.

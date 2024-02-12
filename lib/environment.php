@@ -5,6 +5,7 @@
  * @package framework
  * @subpackage environment
  */
+use Symfony\Component\Dotenv\Dotenv;
 
 class Hm_Environment {
 
@@ -20,7 +21,7 @@ class Hm_Environment {
     public function load() {
         $this->set_required_environment_variables();
 
-        $dotenvLoader = new \Symfony\Component\Dotenv\Dotenv();
+        $dotenvLoader = new Dotenv();
         if (method_exists($dotenvLoader, 'usePutenv')) {
             $dotenvLoader->usePutenv(true);
         }

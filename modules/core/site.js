@@ -303,6 +303,52 @@ var Hm_Ajax_Request = function() { return {
     }
 }};
 
+/**
+ * Show a modal dialog with a title, content and buttons.
+ */
+const Hm_Modals = {
+    /**
+     * show the modal
+     * @param {string | HTMLElement} title title of the modal
+     * @param {string | HTMLElement} content content of the modal
+     * @param {Array<string>} btnsTexts buttons texts
+     * @param {Array<Function>} btnsCbs array of callbacks for each button @default Hm_Modals.hide()
+     */
+    show: function (title = '', content = '', btnsTexts = [], btnsCbs = []) {
+        const modal = `
+            <div id="cypht-modal" class="cypht-modal">
+                <div class="cypht-modal-bg"></div>
+                <div class="cypht-modal-content">
+                    <span class="cypht-modal-content-close">&times;</span>
+                    <div class="cypht-modal-header">
+                        ${title}
+                    </div>
+
+                    <div class="cypht-modal-body">
+                        ${content}
+                    </div>
+
+                    <div class="cypht-modal-footer">
+                        ${btnsTexts.map((text, index) => `<button class="cypht-modal-btn-${index + 1}">${text}</button>`).join('')}
+                    </div>
+                </div>
+            </div>
+        `;
+        document.querySelector('body').insertAdjacentHTML('beforeend', modal);
+
+        btnsTexts.forEach((_, index) => {
+            document.querySelector(`.cypht-modal-btn-${index + 1}`).addEventListener('click', btnsCbs[index] || this.hide);
+        });
+
+        document.querySelector('.cypht-modal-content-close').addEventListener('click', this.hide);
+        document.querySelector('.cypht-modal-bg').addEventListener('click', this.hide);
+    },
+
+    hide: () => {
+        document.querySelector('#cypht-modal').remove();
+    }
+}
+
 /* user notification manager */
 var Hm_Notices = {
     hide_id: false,
@@ -892,6 +938,7 @@ function Message_List() {
                 else {
                     $('.message_list').append('<div class="empty_list">'+hm_empty_folder()+'</div>');
                 }
+                $(".page_links").css("display", "none");// Hide page links as message list is empty
             }
         }
         else {
@@ -1865,7 +1912,7 @@ function listControlsMenu() {
 
 // Sortablejs
 const tableBody = document.querySelector('.message_table_body');
-if(tableBody) {
+if(tableBody && !hm_mobile()) {
     const allFoldersClassNames = [];
     let targetFolder;
     let movingElement;
