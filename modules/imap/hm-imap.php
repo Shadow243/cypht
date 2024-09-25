@@ -1238,14 +1238,10 @@ if (!class_exists('Hm_IMAP')) {
          * @param mixed $struct a message part structure array for decoding and
          * @return string message content
          */
-        public function get_message_content($uid, $message_part, $max=false, $struct=true, $keep_unread=false) {
+        public function get_message_content($uid, $message_part, $max=false, $struct=true) {
             $message_part = preg_replace("/^0\.{1}/", '', $message_part);
             if (!$this->is_clean($uid, 'uid')) {
                 return '';
-            }
-            $body = 'BODY';
-            if ($keep_unread) {
-                $body .= '.PEEK';
             }
             if ($message_part == 0) {
                 $command = "UID FETCH $uid BODY" . "[]\r\n";
@@ -2458,7 +2454,7 @@ if (!class_exists('Hm_IMAP')) {
          * @param array $struct message structure array
          * @return string formatted message content, bool false if no matching part is found
          */
-        public function get_first_message_part($uid, $type, $subtype=false, $struct=false, $keep_unread=false) {
+        public function get_first_message_part($uid, $type, $subtype=false, $struct=false) {
             if (!$subtype) {
                 $flds = array('type' => $type);
             }
@@ -2482,7 +2478,7 @@ if (!class_exists('Hm_IMAP')) {
                     $struct = $struct[0];
                 }
 
-                return array($msg_part_num, $this->get_message_content($uid, $msg_part_num, false, $struct, $keep_unread));
+                return array($msg_part_num, $this->get_message_content($uid, $msg_part_num, false, $struct));
             }
             return array(false, false);
         }

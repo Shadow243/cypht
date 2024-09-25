@@ -562,6 +562,21 @@ async function markPrefetchedMessagesAsRead(uid) {
     }
 }
 
+function markPrefetchedMessagesAsRead(uid) {
+    const detail = Hm_Utils.parse_folder_path(hm_list_path(), 'imap');
+    const msgId = `${detail.type}_${detail.server_id}_${uid}_${detail.folder}`;
+    
+    Hm_Ajax.request([
+        {'name': 'hm_ajax_hook', 'value': 'ajax_message_action'},
+        {'name': 'action_type', 'value': 'read'},
+        {'name': 'message_ids', 'value': [msgId]}
+    ], () => {
+        const folderId = `${detail.type}_${detail.server_id}_${detail.folder}`;
+        Hm_Folders.unread_counts[folderId] -= 1;
+        Hm_Folders.update_unread_counts(folderId);
+    }, null, true);
+}
+
 var expand_imap_mailbox = function(res) {
     if (res.imap_expanded_folder_path) {
         $('.'+Hm_Utils.clean_selector(res.imap_expanded_folder_path), $('.email_folders')).append(res.imap_expanded_folder_formatted);
