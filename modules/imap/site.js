@@ -568,7 +568,11 @@ async function markPrefetchedMessagesAsRead(uid) {
 
     const messages = new Hm_MessagesStore(hm_list_path(), Hm_Utils.get_url_page_number());
     await messages.load(false, true);
-    if (messages.markRawAsRead(uid)) {
+    if (!messages.flagAsReadOnOpen) {
+        return;
+    }
+    
+    if (messages.markRowAsRead(uid)) {
         const folderId = `${detail.type}_${detail.server_id}_${detail.folder}`;
         Hm_Folders.unread_counts[folderId] -= 1;
         Hm_Folders.update_unread_counts(folderId);

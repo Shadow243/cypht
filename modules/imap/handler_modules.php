@@ -1938,7 +1938,7 @@ class Hm_Handler_imap_message_content extends Hm_Handler_Module {
             if (isset($this->request->post['imap_msg_part']) && preg_match("/[0-9\.]+/", $this->request->post['imap_msg_part'])) {
                 $part = $this->request->post['imap_msg_part'];
             }
-            elseif ((isset($this->request->post['imap_prefetch']) && $this->request->post['imap_prefetch'])) {
+            elseif (isset($this->request->post['imap_prefetch']) && $this->request->post['imap_prefetch']) {
                 $prefetch = true;
             }
 
