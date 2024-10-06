@@ -1579,3 +1579,24 @@ $(document).on('submit', '#shareForm', function(e) {
         }
     );
 });
+
+$(document).on('click', '[data-bs-dismiss="modal"]', function() {
+    $('#shareFolderModal').modal('hide');
+});
+
+$(document).on('click', 'a.dropdown-item.share', function(e) {
+    e.preventDefault();
+    console.log("Event", e)
+    const listItem = e.target.closest('li');
+    if(listItem) {
+        listItem.getAttribute('data-id');
+        const uid = listItem.getAttribute('data-id');
+        const folder = listItem.getAttribute('data-folder');
+        //must send a request to get the data using imap_getacl function
+
+        //then populate the modal with the data
+        $('#server_id').val(uid);
+        $('#folder_uid').val(folder);
+        $('#shareFolderModal').modal('show');
+    }
+});
