@@ -181,7 +181,6 @@ function format_imap_folder_section($folders, $id, $output_mod, $with_input = fa
         $results .= '<li class="quota_info"><div class="progress bg-secondary border"><div class="progress-bar bg-light" style="width:'.$quota.'%"></div></div>'.$quota.'% used on '.$quota_max.' MB</li>';
     }
 
-    $results .= '</ul>';
     return $results;
 }}
 
