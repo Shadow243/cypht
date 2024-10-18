@@ -264,4 +264,3 @@ var check_cc_exist_in_contacts_list = function() {
     }
     return "";
 };
-

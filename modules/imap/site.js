@@ -563,10 +563,11 @@ async function markPrefetchedMessagesAsRead(uid) {
 }
 
 async function markPrefetchedMessagesAsRead(uid) {
-    const detail = Hm_Utils.parse_folder_path(hm_list_path(), 'imap');
+    const listPath = getListPathParam();
+    const detail = Hm_Utils.parse_folder_path(listPath, 'imap');
     const msgId = `${detail.type}_${detail.server_id}_${uid}_${detail.folder}`;
 
-    const messages = new Hm_MessagesStore(hm_list_path(), Hm_Utils.get_url_page_number());
+    const messages = new Hm_MessagesStore(listPath, Hm_Utils.get_url_page_number());
     await messages.load(false, true);
     if (!messages.flagAsReadOnOpen) {
         return;
