@@ -154,22 +154,12 @@ function ensureMigrationsTable(PDO $pdo) {
  * Initializes the database schema and populates migrations for new installations.
  */
 function initializeDatabase(PDO $pdo, string $schemaFile, string $migrationDir) {
-    global $db_driver;
     $schemaSql = file_get_contents($schemaFile);
     $pdo->exec($schemaSql);
     echo "Database schema initialized.\n";
 
     ensureMigrationsTable($pdo);
-
-    $migrationFiles = glob($migrationDir .'/'.$db_driver.'/*.sql');
-    $stmt = $pdo->prepare("INSERT INTO migrations (migration, batch) VALUES (:migration, :batch)");
-
-    foreach ($migrationFiles as $file) {
-        $stmt->execute([
-            'migration' => basename($file),
-            'batch' => 0, // Mark as pre-applied
-        ]);
-    }
+    runMigrations($pdo, $migrationDir);
 
     echo "Migrations table populated for new installation.\n";
 }
