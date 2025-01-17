@@ -1079,6 +1079,18 @@ class Hm_Handler_quick_servers_setup extends Hm_Handler_Module {
                     return;
                 }
 
+                if($isSender){
+                    if (!$this->module_is_supported('smtp')) {
+                        Hm_Msgs::add("ERRSMTP module is not enabled");
+                        return;
+                    }
+                    $this->smtp_server_id = connect_to_smtp_server($smtpAddress, $profileName, $smtpPort, $email, $password, $smtpTls, 'smtp', $smtpServerId);
+                    if(!isset($this->smtp_server_id)){
+                        Hm_Msgs::add("ERRCould not save server");
+                        return;
+                    }
+                }
+
                 $this->jmap_server_id = connect_to_imap_server(
                     $jmapAddress,
                     $profileName,
