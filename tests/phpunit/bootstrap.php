@@ -26,6 +26,19 @@ require APP_PATH.'tests/phpunit/mocks.php';
 /* get the framework */
 require APP_PATH.'lib/framework.php';
 
+<<<<<<< Updated upstream
+=======
+/* get mock objects */
+require APP_PATH.'tests/phpunit/mocks.php';
+
+/* get the imap|jmap|ews|smtp classes */
+require_once APP_PATH.'modules/imap/hm-imap.php';
+require_once APP_PATH.'modules/imap/hm-jmap.php';
+require_once APP_PATH.'modules/imap/hm-ews.php';
+require_once APP_PATH.'modules/smtp/hm-smtp.php';
+require_once APP_PATH.'modules/core/hm-mailbox.php';
+
+>>>>>>> Stashed changes
 /* get the stubs */
 require APP_PATH.'tests/phpunit/stubs.php';
 
